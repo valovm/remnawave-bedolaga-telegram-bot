@@ -184,6 +184,13 @@ def _get_method_defaults() -> dict:
                 {'id': 'tpay', 'name': 'T-Pay'},
             ],
         },
+        'oplatex': {
+            'default_display_name': settings.get_oplatex_display_name(),
+            'is_configured': settings.is_oplatex_enabled(),
+            'default_min': settings.OPLATEX_MIN_AMOUNT_KOPEKS,
+            'default_max': settings.OPLATEX_MAX_AMOUNT_KOPEKS,
+            'available_sub_options': None,
+        },
         'rollypay': {
             'default_display_name': settings.get_rollypay_display_name(),
             'is_configured': settings.is_rollypay_enabled(),
@@ -326,6 +333,7 @@ DEFAULT_METHOD_ORDER = [
     'riopay',
     'severpay',
     'paypear',
+    'oplatex',
     'rollypay',
     'overpay',
     'aurapay',

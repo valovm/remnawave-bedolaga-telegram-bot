@@ -560,6 +560,7 @@ async def main():
                 settings.is_wata_enabled(),
                 settings.is_heleket_enabled(),
                 settings.is_apple_iap_enabled(),
+                settings.is_oplatex_enabled(),
             ]
         )
 

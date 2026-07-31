@@ -156,6 +156,13 @@ async def route_payment_by_method(
             await process_paypear_payment_amount(message, db_user, db, amount_kopeks, state)
         return True
 
+    if payment_method == 'oplatex':
+        from .oplatex import process_oplatex_payment_amount
+
+        async with AsyncSessionLocal() as db:
+            await process_oplatex_payment_amount(message, db_user, db, amount_kopeks, state)
+        return True
+
     if payment_method == 'rollypay':
         from .rollypay import process_rollypay_payment_amount
 
@@ -802,6 +809,10 @@ def register_balance_handlers(dp: Dispatcher):
     from .paypear import start_paypear_topup
 
     dp.callback_query.register(start_paypear_topup, F.data == 'topup_paypear')
+
+    from .oplatex import start_oplatex_topup
+
+    dp.callback_query.register(start_oplatex_topup, F.data == 'topup_oplatex')
 
     from .rollypay import start_rollypay_topup
 

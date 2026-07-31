@@ -1331,6 +1331,56 @@ def create_payment_router(bot: Bot, payment_service: PaymentService) -> APIRoute
 
         routes_registered = True
 
+    # OplateX webhook
+    if settings.is_oplatex_enabled():
+
+        @router.get(settings.OPLATEX_WEBHOOK_PATH)
+        async def oplatex_health() -> JSONResponse:
+            return JSONResponse(
+                {
+                    'status': 'ok',
+                    'service': 'oplatex_webhook',
+                    'enabled': settings.is_oplatex_enabled(),
+                }
+            )
+
+        @router.post(settings.OPLATEX_WEBHOOK_PATH)
+        async def oplatex_webhook(request: Request) -> JSONResponse:
+            try:
+                raw_body = await request.body()
+                payload = json.loads(raw_body)
+            except Exception as parse_error:
+                logger.error('OplateX webhook: failed to parse JSON', parse_error=parse_error)
+                return JSONResponse({'status': False}, status_code=status.HTTP_400_BAD_REQUEST)
+
+            # Подпись — HMAC-SHA256 сырого тела в заголовке Signature
+            received_signature = request.headers.get('Signature', '')
+
+            from app.services.oplatex_service import oplatex_service
+
+            if not oplatex_service.verify_webhook_signature(raw_body, received_signature):
+                logger.warning('OplateX webhook: invalid signature')
+                return JSONResponse({'status': False}, status_code=status.HTTP_403_FORBIDDEN)
+
+            try:
+                success = await _process_payment_service_callback(
+                    payment_service,
+                    payload,
+                    'process_oplatex_webhook',
+                )
+                if not success:
+                    logger.error(
+                        'OplateX webhook processing failed',
+                        order_id=payload.get('order'),
+                        oplatex_id=payload.get('id'),
+                    )
+            except Exception as e:
+                logger.exception('OplateX webhook processing error', error=e)
+            # Always return 200 — retry behavior недокументирован, недообработку добирает polling
+            return JSONResponse({'status': True}, status_code=status.HTTP_200_OK)
+
+        routes_registered = True
+
     # RollyPay webhook
     if settings.is_rollypay_enabled():
 
@@ -1817,6 +1867,7 @@ def create_payment_router(bot: Bot, payment_service: PaymentService) -> APIRoute
                     'riopay_enabled': settings.is_riopay_enabled(),
                     'severpay_enabled': settings.is_severpay_enabled(),
                     'paypear_enabled': settings.is_paypear_enabled(),
+                    'oplatex_enabled': settings.is_oplatex_enabled(),
                     'rollypay_enabled': settings.is_rollypay_enabled(),
                     'overpay_enabled': settings.is_overpay_enabled(),
                     'aurapay_enabled': settings.is_aurapay_enabled(),

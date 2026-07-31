@@ -40,6 +40,7 @@ from app.services.payment.freekassa import FreekassaPaymentMixin
 from app.services.payment.jupiter import JupiterPaymentMixin
 from app.services.payment.kassa_ai import KassaAiPaymentMixin
 from app.services.payment.lava import LavaPaymentMixin
+from app.services.payment.oplatex import OplateXPaymentMixin
 from app.services.payment.overpay import OverpayPaymentMixin
 from app.services.payment.paypear import PayPearPaymentMixin
 from app.services.payment.riopay import RioPayPaymentMixin
@@ -375,6 +376,44 @@ async def update_paypear_payment_status(*args, **kwargs):
 async def link_paypear_payment_to_transaction(*args, **kwargs):
     paypear_crud = import_module('app.database.crud.paypear')
     return await paypear_crud.link_paypear_payment_to_transaction(*args, **kwargs)
+
+
+# --- OplateX CRUD wrappers ---
+
+
+async def create_oplatex_payment(*args, **kwargs):
+    oplatex_crud = import_module('app.database.crud.oplatex')
+    return await oplatex_crud.create_oplatex_payment(*args, **kwargs)
+
+
+async def get_oplatex_payment_by_order_id(*args, **kwargs):
+    oplatex_crud = import_module('app.database.crud.oplatex')
+    return await oplatex_crud.get_oplatex_payment_by_order_id(*args, **kwargs)
+
+
+async def get_oplatex_payment_by_oplatex_id(*args, **kwargs):
+    oplatex_crud = import_module('app.database.crud.oplatex')
+    return await oplatex_crud.get_oplatex_payment_by_oplatex_id(*args, **kwargs)
+
+
+async def get_oplatex_payment_by_id(*args, **kwargs):
+    oplatex_crud = import_module('app.database.crud.oplatex')
+    return await oplatex_crud.get_oplatex_payment_by_id(*args, **kwargs)
+
+
+async def get_oplatex_payment_by_id_for_update(*args, **kwargs):
+    oplatex_crud = import_module('app.database.crud.oplatex')
+    return await oplatex_crud.get_oplatex_payment_by_id_for_update(*args, **kwargs)
+
+
+async def update_oplatex_payment_status(*args, **kwargs):
+    oplatex_crud = import_module('app.database.crud.oplatex')
+    return await oplatex_crud.update_oplatex_payment_status(*args, **kwargs)
+
+
+async def link_oplatex_payment_to_transaction(*args, **kwargs):
+    oplatex_crud = import_module('app.database.crud.oplatex')
+    return await oplatex_crud.link_oplatex_payment_to_transaction(*args, **kwargs)
 
 
 # --- RollyPay CRUD wrappers ---
@@ -744,6 +783,7 @@ class PaymentService(
     RioPayPaymentMixin,
     SeverPayPaymentMixin,
     PayPearPaymentMixin,
+    OplateXPaymentMixin,
     RollyPayPaymentMixin,
     OverpayPaymentMixin,
     AuraPayPaymentMixin,

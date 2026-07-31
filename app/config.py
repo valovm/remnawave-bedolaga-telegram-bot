@@ -850,6 +850,21 @@ class Settings(BaseSettings):
     PAYPEAR_RETURN_URL: str | None = None
     PAYPEAR_PAYMENT_METHOD: str = 'sbp'  # bank_card, sbp, sberpay, tpay
 
+    # OplateX (docs.oplatex.com)
+    OPLATEX_ENABLED: bool = False
+    OPLATEX_MERCHANT_ID: str | None = None  # UUID мерчанта
+    OPLATEX_SECRET_KEY: str | None = None
+    # Отдельный секрет для подписи входящих вебхуков (если не задан — OPLATEX_SECRET_KEY)
+    OPLATEX_WEBHOOK_SECRET: str | None = None
+    OPLATEX_DISPLAY_NAME: str = 'OplateX'
+    OPLATEX_CURRENCY: str = 'RUB'
+    OPLATEX_MIN_AMOUNT_KOPEKS: int = 10000  # 100₽
+    OPLATEX_MAX_AMOUNT_KOPEKS: int = 10000000  # 100 000₽
+    OPLATEX_WEBHOOK_PATH: str = '/oplatex-webhook'
+    OPLATEX_RETURN_URL: str | None = None
+    OPLATEX_PAYMENT_TYPE: str = 'nspk'  # nspk (СБП), any_bank (перевод на карту)
+    OPLATEX_API_URL: str = 'https://api.oplatex.com'
+
     # RollyPay (rollypay.io)
     ROLLYPAY_ENABLED: bool = False
     ROLLYPAY_API_KEY: str | None = None  # X-API-Key header
@@ -2636,6 +2651,16 @@ class Settings(BaseSettings):
 
     def get_paypear_display_name_html(self) -> str:
         return html.escape(self.get_paypear_display_name())
+
+    def is_oplatex_enabled(self) -> bool:
+        return self.OPLATEX_ENABLED and self.OPLATEX_MERCHANT_ID is not None and self.OPLATEX_SECRET_KEY is not None
+
+    def get_oplatex_display_name(self) -> str:
+        name = (self.OPLATEX_DISPLAY_NAME or '').strip()
+        return name if name else 'OplateX'
+
+    def get_oplatex_display_name_html(self) -> str:
+        return html.escape(self.get_oplatex_display_name())
 
     def is_rollypay_enabled(self) -> bool:
         return self.ROLLYPAY_ENABLED and self.ROLLYPAY_API_KEY is not None and self.ROLLYPAY_SIGNING_SECRET is not None
