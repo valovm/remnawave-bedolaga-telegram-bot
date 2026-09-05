@@ -10,6 +10,7 @@ from app.handlers import (
     common,
     contests as user_contests,
     menu,
+    movo_onboarding,
     polls as user_polls,
     promocode,
     referral,
@@ -77,7 +78,6 @@ from app.middlewares.display_name_restriction import DisplayNameRestrictionMiddl
 from app.middlewares.global_error import GlobalErrorMiddleware
 from app.middlewares.logging import LoggingMiddleware
 from app.middlewares.maintenance import MaintenanceMiddleware
-from app.middlewares.movo_start import MovoStartMiddleware
 from app.middlewares.subscription_checker import SubscriptionStatusMiddleware
 from app.middlewares.throttling import ThrottlingMiddleware
 from app.services.maintenance_service import maintenance_service
@@ -178,14 +178,13 @@ async def setup_bot() -> tuple[Bot, Dispatcher]:
     dp.message.middleware(AuthMiddleware())
     dp.callback_query.middleware(AuthMiddleware())
     dp.pre_checkout_query.middleware(AuthMiddleware())
-    dp.message.middleware(MovoStartMiddleware())
-    dp.callback_query.middleware(MovoStartMiddleware())
     display_name_restriction = DisplayNameRestrictionMiddleware()
     dp.message.middleware(display_name_restriction)
     dp.callback_query.middleware(display_name_restriction)
     dp.message.middleware(SubscriptionStatusMiddleware())
     dp.callback_query.middleware(SubscriptionStatusMiddleware())
     dp.pre_checkout_query.middleware(SubscriptionStatusMiddleware())
+    movo_onboarding.register_handlers(dp)
     start.register_handlers(dp)
     menu.register_handlers(dp)
     subscription.register_handlers(dp)
