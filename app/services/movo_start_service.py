@@ -4,6 +4,7 @@ from typing import Any
 
 import structlog
 from aiogram import Bot, types
+from aiogram.types import FSInputFile
 
 from app.config import settings
 from app.database.crud.user import get_user_by_telegram_id
@@ -24,6 +25,7 @@ class OnboardingPost:
     movo_button_text_key: str | None = None
     show_support_button: bool = False
     choices: tuple[tuple[str, str], ...] = ()
+    media_path: str | None = None
 
 
 ONBOARDING_POSTS = (
@@ -33,6 +35,7 @@ ONBOARDING_POSTS = (
         delay_seconds=0,
         text_key='MOVO_ONBOARDING_WELCOME_TEXT',
         movo_button_text_key='MOVO_ONBOARDING_CONNECT_BUTTON',
+        media_path='assets/movo/onboarding_welcome.jpg',
     ),
     OnboardingPost(
         key='connection_reminder',
@@ -96,7 +99,14 @@ class MovoStartService:
             return False
 
         welcome_post = self.posts[0]
-        await message.answer(self._post_text(welcome_post), reply_markup=self._build_keyboard(welcome_post))
+        if welcome_post.media_path:
+            await message.answer_photo(
+                FSInputFile(welcome_post.media_path),
+                caption=self._post_text(welcome_post),
+                reply_markup=self._build_keyboard(welcome_post),
+            )
+        else:
+            await message.answer(self._post_text(welcome_post), reply_markup=self._build_keyboard(welcome_post))
         self.schedule_followup(message.bot, message.chat.id, message.from_user.id)
         return True
 

@@ -13,6 +13,7 @@ async def test_sends_welcome_post_with_cabinet_miniapp_button_when_user_has_no_a
 ) -> None:
     message = SimpleNamespace(
         answer=AsyncMock(),
+        answer_photo=AsyncMock(),
         bot=SimpleNamespace(),
         chat=SimpleNamespace(id=100),
         from_user=SimpleNamespace(id=200),
@@ -28,9 +29,11 @@ async def test_sends_welcome_post_with_cabinet_miniapp_button_when_user_has_no_a
     handled = await service.handle(message, SimpleNamespace(subscriptions=[]))
 
     assert handled is True
-    message.answer.assert_awaited_once()
-    assert message.answer.await_args.args[0] == get_texts('ru').t(ONBOARDING_POSTS[0].text_key)
-    button = message.answer.await_args.kwargs['reply_markup'].inline_keyboard[0][0]
+    message.answer.assert_not_awaited()
+    message.answer_photo.assert_awaited_once()
+    assert message.answer_photo.await_args.kwargs['caption'] == get_texts('ru').t(ONBOARDING_POSTS[0].text_key)
+    assert message.answer_photo.await_args.args[0].path == 'assets/movo/onboarding_welcome.jpg'
+    button = message.answer_photo.await_args.kwargs['reply_markup'].inline_keyboard[0][0]
     assert button.text == '🚀 Подключить VPN'
     assert button.web_app.url == 'https://cabinet.example'
     assert button.callback_data is None
