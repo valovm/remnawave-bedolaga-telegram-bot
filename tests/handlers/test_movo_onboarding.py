@@ -7,7 +7,7 @@ from app.handlers.movo_onboarding import movo_start
 
 
 @pytest.mark.asyncio
-async def test_movo_start_runs_custom_flow_before_regular_start() -> None:
+async def test_movo_start_stops_after_custom_flow_handles_user() -> None:
     message = SimpleNamespace(from_user=SimpleNamespace(id=200))
     state = object()
     db = object()
@@ -20,6 +20,22 @@ async def test_movo_start_runs_custom_flow_before_regular_start() -> None:
         await movo_start(message, state, db, db_user=user)
 
     handle.assert_awaited_once_with(message, user)
+    regular_start.assert_not_awaited()
+
+
+@pytest.mark.asyncio
+async def test_regular_start_runs_when_user_has_active_subscription() -> None:
+    message = SimpleNamespace(from_user=SimpleNamespace(id=200))
+    state = object()
+    db = object()
+    user = object()
+
+    with (
+        patch('app.handlers.movo_onboarding.movo_start_service.handle', new=AsyncMock(return_value=False)),
+        patch('app.handlers.movo_onboarding.cmd_start', new=AsyncMock()) as regular_start,
+    ):
+        await movo_start(message, state, db, db_user=user)
+
     regular_start.assert_awaited_once_with(message, state, db, db_user=user)
 
 

@@ -25,6 +25,8 @@ async def movo_start(
             telegram_id=message.from_user.id,
             welcome_sent=handled,
         )
+        if handled:
+            return
     except Exception:
         logger.exception('MOVO onboarding branch failed; continuing regular /start')
 
