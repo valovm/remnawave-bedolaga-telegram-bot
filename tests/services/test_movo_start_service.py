@@ -19,7 +19,7 @@ async def test_sends_welcome_post_with_cabinet_miniapp_button_when_user_has_no_a
     )
     monkeypatch.setattr(
         'app.services.movo_start_service.build_cabinet_url',
-        lambda path: f'https://cabinet.example{path}',
+        lambda path: 'https://cabinet.example' if path == '/' else '',
     )
 
     service = MovoStartService()
@@ -32,7 +32,7 @@ async def test_sends_welcome_post_with_cabinet_miniapp_button_when_user_has_no_a
     assert message.answer.await_args.args[0] == get_texts('ru').t(ONBOARDING_POSTS[0].text_key)
     button = message.answer.await_args.kwargs['reply_markup'].inline_keyboard[0][0]
     assert button.text == '🚀 Подключить VPN'
-    assert button.web_app.url == 'https://cabinet.example/subscription'
+    assert button.web_app.url == 'https://cabinet.example'
     assert button.callback_data is None
     service.schedule_followup.assert_called_once_with(message.bot, 100, 200)
 
@@ -73,7 +73,10 @@ async def test_followup_is_sent_after_fresh_check_confirms_no_subscription(
 ) -> None:
     bot = SimpleNamespace(send_message=AsyncMock())
     user = SimpleNamespace(subscriptions=[])
-    monkeypatch.setattr('app.services.movo_start_service.build_cabinet_url', lambda path: f'https://movo.test{path}')
+    monkeypatch.setattr(
+        'app.services.movo_start_service.build_cabinet_url',
+        lambda path: 'https://movo.test' if path == '/' else '',
+    )
 
     with (
         patch('app.services.movo_start_service.AsyncSessionLocal', return_value=_SessionContext()),
@@ -87,7 +90,7 @@ async def test_followup_is_sent_after_fresh_check_confirms_no_subscription(
     call = bot.send_message.await_args.kwargs
     assert call['text'] == get_texts('ru').t(ONBOARDING_POSTS[1].text_key)
     assert call['reply_markup'].inline_keyboard[0][0].url == 'https://t.me/help'
-    assert call['reply_markup'].inline_keyboard[1][0].web_app.url == 'https://movo.test/subscription'
+    assert call['reply_markup'].inline_keyboard[1][0].web_app.url == 'https://movo.test'
 
 
 @pytest.mark.asyncio
@@ -111,7 +114,10 @@ async def test_second_followup_uses_retry_button_and_fresh_subscription_check(
 ) -> None:
     bot = SimpleNamespace(send_message=AsyncMock())
     user = SimpleNamespace(subscriptions=[])
-    monkeypatch.setattr('app.services.movo_start_service.build_cabinet_url', lambda path: f'https://movo.test{path}')
+    monkeypatch.setattr(
+        'app.services.movo_start_service.build_cabinet_url',
+        lambda path: 'https://movo.test' if path == '/' else '',
+    )
 
     with (
         patch('app.services.movo_start_service.AsyncSessionLocal', return_value=_SessionContext()),
@@ -127,7 +133,7 @@ async def test_second_followup_uses_retry_button_and_fresh_subscription_check(
     assert call['reply_markup'].inline_keyboard[0][0].text == '🛟 Поддержка'
     retry_button = call['reply_markup'].inline_keyboard[1][0]
     assert retry_button.text == '🚀 Попробовать снова'
-    assert retry_button.web_app.url == 'https://movo.test/subscription'
+    assert retry_button.web_app.url == 'https://movo.test'
 
 
 @pytest.mark.asyncio
@@ -151,11 +157,14 @@ async def test_no_time_reaction_opens_month_offer_in_miniapp(monkeypatch: pytest
         message=SimpleNamespace(answer=AsyncMock()),
         answer=AsyncMock(),
     )
-    monkeypatch.setattr('app.services.movo_start_service.build_cabinet_url', lambda path: f'https://movo.test{path}')
+    monkeypatch.setattr(
+        'app.services.movo_start_service.build_cabinet_url',
+        lambda path: 'https://movo.test' if path == '/' else '',
+    )
 
     handled = await MovoStartService().handle_reaction(callback)
 
     assert handled is True
     response = callback.message.answer.await_args.kwargs
     assert response['reply_markup'].inline_keyboard[0][0].text == '🚀 Получить месяц за 1 ₽'
-    assert response['reply_markup'].inline_keyboard[0][0].web_app.url == 'https://movo.test/subscription'
+    assert response['reply_markup'].inline_keyboard[0][0].web_app.url == 'https://movo.test'

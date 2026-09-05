@@ -202,7 +202,7 @@ class MovoStartService:
             )
 
         if post.movo_button_text_key:
-            cabinet_url = build_cabinet_url('/subscription')
+            cabinet_url = build_cabinet_url('/')
             movo_button_text = texts.t(post.movo_button_text_key)
             rows.append(
                 [
@@ -217,7 +217,7 @@ class MovoStartService:
     def _build_reaction_keyboard(actions: tuple[str, ...]) -> types.InlineKeyboardMarkup:
         texts = get_texts('ru')
         support_url = settings.get_support_contact_url()
-        cabinet_url = build_cabinet_url('/subscription')
+        cabinet_url = build_cabinet_url('/')
         rows: list[list[types.InlineKeyboardButton]] = []
         for action in actions:
             if action == 'support':
